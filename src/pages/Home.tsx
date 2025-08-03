@@ -59,8 +59,8 @@ const Home = () => {
             </div>
             
             <p className={`text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto animate-slide-in-up animate-delay-200`}>
-              Experience the future of digital marketing with our cutting-edge platform. 
-              Join thousands of marketers who trust us to amplify their brand presence.
+              Secure, scalable cloud-based healthcare management platform that enables real-time 
+              doctor-patient interaction, appointment scheduling, and comprehensive medical history management.
             </p>
 
             <div className={`flex flex-col sm:flex-row gap-6 justify-center animate-slide-in-up animate-delay-300`}>
@@ -91,7 +91,7 @@ const Home = () => {
               Why Choose <span className="text-neon-primary">Med Track</span>?
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Discover the powerful features that make us the preferred choice for modern marketers
+              Discover the powerful features that make us the trusted choice for healthcare management
             </p>
           </div>
 
@@ -124,10 +124,10 @@ const Home = () => {
         <div className="container mx-auto">
           <div className="glass-card text-center max-w-4xl mx-auto">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-glow">
-              Ready to <span className="text-neon-secondary">Transform</span> Your Marketing?
+              Ready to <span className="text-neon-secondary">Revolutionize</span> Your Healthcare?
             </h2>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Join our community of successful marketers and take your business to the next level with our innovative solutions.
+              Join our platform and experience the future of healthcare management with secure, efficient, and user-friendly solutions.
             </p>
             <Link
               to="/signup"
@@ -159,20 +159,20 @@ const features = [
   {
     id: 1,
     icon: Zap,
-    title: 'Lightning Fast',
-    description: 'Deploy campaigns in seconds with our optimized infrastructure and real-time analytics dashboard.'
+    title: 'Real-Time Interaction',
+    description: 'Instant communication between doctors and patients with secure messaging and video consultations.'
   },
   {
     id: 2,
     icon: Shield,
-    title: 'Secure & Reliable',
-    description: 'Enterprise-grade security with 99.9% uptime guarantee. Your data is protected with advanced encryption.'
+    title: 'Secure & HIPAA Compliant',
+    description: 'Enterprise-grade security with AWS infrastructure. Your medical data is protected with advanced encryption.'
   },
   {
     id: 3,
     icon: Users,
-    title: 'Team Collaboration',
-    description: 'Seamlessly work with your team using our collaborative tools and real-time communication features.'
+    title: 'Role-Based Access',
+    description: 'Separate portals for patients and doctors with tailored experiences and appropriate access controls.'
   }
 ];
 
