@@ -17,7 +17,7 @@ const Home = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="text-2xl font-bold text-neon-primary">
-              Pavan Marketing
+              Med Track
             </div>
             <div className="flex space-x-4">
               <Link
@@ -51,9 +51,9 @@ const Home = () => {
           <div className={`transition-all duration-1000 ${isVisible ? 'animate-slide-in-up' : 'opacity-0'}`}>
             <h1 className="text-6xl md:text-8xl font-bold mb-8 text-glow">
               Welcome to{' '}
-              <span className="text-neon-primary">Pavan</span>
+              <span className="text-neon-primary">Med Track</span>
               <br />
-              <span className="text-neon-secondary">Marketing</span>
+              <span className="text-neon-secondary">AWS cloud Enabled Healthcare management System</span>
             </h1>
             
             <p className={`text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto animate-slide-in-up animate-delay-200`}>
@@ -86,7 +86,7 @@ const Home = () => {
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-glow">
-              Why Choose <span className="text-neon-primary">Pavan Marketing</span>?
+              Why Choose <span className="text-neon-primary">Med Track</span>?
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Discover the powerful features that make us the preferred choice for modern marketers
@@ -142,10 +142,10 @@ const Home = () => {
       <footer className="border-t border-border/30 py-12 px-6">
         <div className="container mx-auto text-center">
           <div className="text-2xl font-bold text-neon-primary mb-4">
-            Pavan Marketing
+            Med Track
           </div>
           <p className="text-muted-foreground">
-            © 2025 Pavan Marketing. All rights reserved. Building the future of digital marketing.
+            © 2025 Med Track. All rights reserved. Building the future of healthcare management.
           </p>
         </div>
       </footer>
