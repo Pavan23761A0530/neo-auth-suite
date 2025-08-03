@@ -49,12 +49,14 @@ const Home = () => {
       >
         <div className="container mx-auto text-center relative z-10">
           <div className={`transition-all duration-1000 ${isVisible ? 'animate-slide-in-up' : 'opacity-0'}`}>
-            <h1 className="text-6xl md:text-8xl font-bold mb-8 text-glow">
+            <h1 className="text-6xl md:text-8xl font-bold mb-4 text-glow">
               Welcome to{' '}
               <span className="text-neon-primary">Med Track</span>
-              <br />
-              <span className="text-neon-secondary">AWS cloud Enabled Healthcare management System</span>
             </h1>
+            
+            <div className="text-lg md:text-xl text-neon-secondary/80 mb-8 font-light tracking-wide">
+              AWS Cloud Enabled Healthcare Management System
+            </div>
             
             <p className={`text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto animate-slide-in-up animate-delay-200`}>
               Experience the future of digital marketing with our cutting-edge platform. 
