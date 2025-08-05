@@ -113,9 +113,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(error.message);
       }
 
-      if (data.user && !data.user.email_confirmed_at) {
-        throw new Error('Please check your email and click the confirmation link to complete registration.');
-      }
+    // Email confirmation handled by Supabase settings
+    if (data.user) {
+      // Registration successful - user can now login
+    }
 
       // User state will be updated via the auth state change listener
     } catch (error: any) {
