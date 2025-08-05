@@ -1,73 +1,140 @@
-# Welcome to your Lovable project
+# Healthcare Platform
 
-## Project info
+A modern healthcare management system with user authentication, appointment booking, and medical records management.
 
-**URL**: https://lovable.dev/projects/978d522d-9f72-42f3-8138-f182bf3874db
+## Features
 
-## How can I edit this code?
+- 🔐 **Secure Authentication**: JWT-based login and registration
+- 👥 **Role-based Access**: Separate interfaces for patients and doctors
+- 📅 **Appointment Management**: Book and manage appointments
+- 📋 **Medical Records**: Secure medical record management
+- 🎨 **Modern UI**: Beautiful, responsive design with animations
+- 🔒 **Data Security**: SQLite database with encrypted passwords
 
-There are several ways of editing your application.
+## Quick Start
 
-**Use Lovable**
+### Prerequisites
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/978d522d-9f72-42f3-8138-f182bf3874db) and start prompting.
+- Node.js (v16 or higher)
+- Python (v3.8 or higher)
+- npm or yarn
 
-Changes made via Lovable will be committed automatically to this repo.
+### Backend Setup
 
-**Use your preferred IDE**
+1. **Navigate to backend directory:**
+   ```bash
+   cd backend
+   ```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+2. **Install Python dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+3. **Start the backend server:**
+   ```bash
+   python app.py
+   ```
+   
+   Or use the provided script:
+   ```bash
+   python ../start-backend.py
+   ```
 
-Follow these steps:
+   The backend will be available at: `http://localhost:5000`
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Frontend Setup
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+1. **Install Node.js dependencies:**
+   ```bash
+   npm install
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+2. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+   
+   Or use the provided script (Windows):
+   ```bash
+   start-frontend.bat
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+   The frontend will be available at: `http://localhost:3000`
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - User login
+- `GET /api/health` - Health check
+
+### Appointments
+- `POST /api/appointments` - Create appointment (patients only)
+- `GET /api/appointments` - Get user's appointments
+
+### Users
+- `GET /api/users/doctors` - Get all doctors
+- `GET /api/users/profile` - Get user profile
+
+## Database
+
+The application uses SQLite for data storage. The database file (`healthcare.db`) will be created automatically when you first start the backend server.
+
+### Tables
+- **users**: User accounts and authentication
+- **appointments**: Appointment bookings and management
+- **medical_records**: Medical records and history
+
+## Environment Variables
+
+Create a `.env` file in the backend directory:
+
+```env
+JWT_SECRET_KEY=your-super-secret-jwt-key-change-in-production
+FLASK_ENV=development
+FLASK_DEBUG=True
 ```
 
-**Edit a file directly in GitHub**
+## Troubleshooting
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Common Issues
 
-**Use GitHub Codespaces**
+1. **"Failed to fetch" error:**
+   - Make sure the backend server is running on port 5000
+   - Check that CORS is properly configured
+   - Verify the API_BASE_URL in `src/hooks/useAuth.tsx`
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+2. **Database errors:**
+   - The SQLite database will be created automatically
+   - Ensure the backend has write permissions in its directory
 
-## What technologies are used for this project?
+3. **Port conflicts:**
+   - Backend: Change port in `backend/app.py` (line 429)
+   - Frontend: Change port in `vite.config.ts`
 
-This project is built with:
+### Development
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- Backend runs on: `http://localhost:5000`
+- Frontend runs on: `http://localhost:3000`
+- API health check: `http://localhost:5000/api/health`
 
-## How can I deploy this project?
+## Security Features
 
-Simply open [Lovable](https://lovable.dev/projects/978d522d-9f72-42f3-8138-f182bf3874db) and click on Share -> Publish.
+- Password hashing with bcrypt
+- JWT token authentication
+- CORS protection
+- Input validation
+- SQL injection prevention
 
-## Can I connect a custom domain to my Lovable project?
+## Contributing
 
-Yes, you can!
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## License
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+This project is licensed under the MIT License.

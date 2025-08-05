@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, User, Mail, Phone, Lock, ArrowLeft, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, User, Mail, Lock, ArrowLeft, Sparkles, Stethoscope, UserCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    mobile: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'patient' as 'patient' | 'doctor'
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -18,9 +18,10 @@ const Signup = () => {
   const [passwordStrength, setPasswordStrength] = useState(0);
   
   const { toast } = useToast();
+  const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
@@ -61,10 +62,6 @@ const Signup = () => {
       toast({ title: 'Error', description: 'Valid email is required', variant: 'destructive' });
       return false;
     }
-    if (!formData.mobile.trim() || !/^\d{10}$/.test(formData.mobile.replace(/\D/g, ''))) {
-      toast({ title: 'Error', description: 'Valid 10-digit mobile number is required', variant: 'destructive' });
-      return false;
-    }
     if (formData.password.length < 8) {
       toast({ title: 'Error', description: 'Password must be at least 8 characters', variant: 'destructive' });
       return false;
@@ -84,26 +81,14 @@ const Signup = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: {
-            name: formData.name,
-            mobile: formData.mobile
-          }
-        }
-      });
-
-      if (error) throw error;
+      await register(formData.email, formData.password, formData.name, formData.role);
 
       toast({
         title: 'Success!',
-        description: 'Account created successfully. Please check your email to verify your account.',
+        description: 'Account created successfully. Welcome to the healthcare platform!',
       });
       
-      navigate('/login');
+      navigate('/');
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -133,8 +118,8 @@ const Signup = () => {
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center animate-pulse-glow">
               <Sparkles className="w-8 h-8 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold text-glow mb-2">Join Pavan Marketing</h1>
-            <p className="text-muted-foreground">Create your account and start your journey</p>
+            <h1 className="text-3xl font-bold text-glow mb-2">Join Healthcare Platform</h1>
+            <p className="text-muted-foreground">Create your account and start managing healthcare</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -172,20 +157,57 @@ const Signup = () => {
               </div>
             </div>
 
-            {/* Mobile Field */}
+            {/* Role Selection */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Mobile Number</label>
-              <div className="relative">
-                <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <input
-                  type="tel"
-                  name="mobile"
-                  value={formData.mobile}
-                  onChange={handleInputChange}
-                  className="input-futuristic pl-12 w-full"
-                  placeholder="Enter your mobile number"
-                  required
-                />
+              <label className="text-sm font-medium text-foreground">I am a</label>
+              <div className="grid grid-cols-2 gap-4">
+                <label className="relative cursor-pointer">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="patient"
+                    checked={formData.role === 'patient'}
+                    onChange={handleInputChange}
+                    className="sr-only"
+                  />
+                  <div className={`p-4 rounded-lg border-2 transition-all ${
+                    formData.role === 'patient' 
+                      ? 'border-primary bg-primary/10' 
+                      : 'border-muted hover:border-primary/50'
+                  }`}>
+                    <div className="flex items-center space-x-3">
+                      <UserCheck className="w-5 h-5 text-primary" />
+                      <div>
+                        <div className="font-medium">Patient</div>
+                        <div className="text-sm text-muted-foreground">Book appointments</div>
+                      </div>
+                    </div>
+                  </div>
+                </label>
+                
+                <label className="relative cursor-pointer">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="doctor"
+                    checked={formData.role === 'doctor'}
+                    onChange={handleInputChange}
+                    className="sr-only"
+                  />
+                  <div className={`p-4 rounded-lg border-2 transition-all ${
+                    formData.role === 'doctor' 
+                      ? 'border-primary bg-primary/10' 
+                      : 'border-muted hover:border-primary/50'
+                  }`}>
+                    <div className="flex items-center space-x-3">
+                      <Stethoscope className="w-5 h-5 text-primary" />
+                      <div>
+                        <div className="font-medium">Doctor</div>
+                        <div className="text-sm text-muted-foreground">Manage patients</div>
+                      </div>
+                    </div>
+                  </div>
+                </label>
               </div>
             </div>
 

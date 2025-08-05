@@ -1,198 +1,242 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { Calendar, Clock, User, FileText, X, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar, Clock, User } from 'lucide-react';
-import { apiService } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
 
 interface Doctor {
   id: string;
   name: string;
-  specialty: string;
-  available_times: string[];
+  email: string;
 }
 
-const AppointmentBooking = () => {
+interface AppointmentBookingProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+const AppointmentBooking = ({ isOpen, onClose, onSuccess }: AppointmentBookingProps) => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState('');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  const [notes, setNotes] = useState('');
+  const [appointmentDate, setAppointmentDate] = useState('');
+  const [appointmentTime, setAppointmentTime] = useState('');
+  const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingDoctors, setLoadingDoctors] = useState(false);
+
   const { toast } = useToast();
   const { user } = useAuth();
 
   useEffect(() => {
-    fetchDoctors();
-  }, []);
+    if (isOpen && user?.role === 'patient') {
+      loadDoctors();
+    }
+  }, [isOpen, user]);
 
-  const fetchDoctors = async () => {
+  const loadDoctors = async () => {
+    setLoadingDoctors(true);
     try {
-      // Mock data - replace with actual API call
-      const mockDoctors: Doctor[] = [
-        {
-          id: '1',
-          name: 'Dr. Sarah Johnson',
-          specialty: 'Cardiology',
-          available_times: ['09:00', '10:00', '11:00', '14:00', '15:00']
-        },
-        {
-          id: '2',
-          name: 'Dr. Michael Chen',
-          specialty: 'Neurology',
-          available_times: ['10:00', '11:00', '13:00', '14:00', '16:00']
-        },
-        {
-          id: '3',
-          name: 'Dr. Emily Davis',
-          specialty: 'Dermatology',
-          available_times: ['09:00', '10:30', '12:00', '15:00', '16:30']
+      const token = localStorage.getItem('healthcare_token');
+      const response = await fetch('http://localhost:5000/api/users/doctors', {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-      ];
-      setDoctors(mockDoctors);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch doctors",
-        variant: "destructive"
       });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setDoctors(data.doctors || []);
+      }
+    } catch (error) {
+      console.error('Error loading doctors:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load doctors',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoadingDoctors(false);
     }
   };
 
-  const handleBookAppointment = async () => {
-    if (!selectedDoctor || !date || !time) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedDoctor || !appointmentDate || !appointmentTime) {
       toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Please fill in all required fields',
+        variant: 'destructive'
       });
       return;
     }
 
     setLoading(true);
     try {
-      await apiService.bookAppointment({
-        patient_id: user?.id,
-        doctor_id: selectedDoctor,
-        date,
-        time,
-        status: 'scheduled',
-        notes
+      const token = localStorage.getItem('healthcare_token');
+      const response = await fetch('http://localhost:5000/api/appointments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          doctor_id: selectedDoctor,
+          appointment_date: appointmentDate,
+          appointment_time: appointmentTime,
+          reason: reason
+        })
       });
 
+      if (response.ok) {
+        toast({
+          title: 'Success',
+          description: 'Appointment booked successfully!'
+        });
+        onSuccess();
+        onClose();
+        // Reset form
+        setSelectedDoctor('');
+        setAppointmentDate('');
+        setAppointmentTime('');
+        setReason('');
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to book appointment');
+      }
+    } catch (error: any) {
       toast({
-        title: "Success",
-        description: "Appointment booked successfully!",
-        variant: "default"
-      });
-
-      // Reset form
-      setSelectedDoctor('');
-      setDate('');
-      setTime('');
-      setNotes('');
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to book appointment",
-        variant: "destructive"
+        title: 'Error',
+        description: error.message || 'Failed to book appointment',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const selectedDoctorData = doctors.find(d => d.id === selectedDoctor);
+  if (!isOpen) return null;
 
   return (
-    <Card className="glass-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-foreground">
-          <Calendar className="w-5 h-5 text-primary" />
-          Book New Appointment
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="doctor">Select Doctor</Label>
-          <Select value={selectedDoctor} onValueChange={setSelectedDoctor}>
-            <SelectTrigger className="glass border-border/50">
-              <SelectValue placeholder="Choose a doctor" />
-            </SelectTrigger>
-            <SelectContent>
-              {doctors.map((doctor) => (
-                <SelectItem key={doctor.id} value={doctor.id}>
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    <div>
-                      <div className="font-medium">{doctor.name}</div>
-                      <div className="text-sm text-muted-foreground">{doctor.specialty}</div>
-                    </div>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="glass-card w-full max-w-md mx-4 animate-slide-in-up">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-foreground">Book Appointment</h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Doctor Selection */}
           <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
-            <Input
+            <label className="text-sm font-medium text-foreground flex items-center">
+              <User className="w-4 h-4 mr-2" />
+              Select Doctor *
+            </label>
+            {loadingDoctors ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <span className="ml-2 text-sm text-muted-foreground">Loading doctors...</span>
+              </div>
+            ) : (
+              <select
+                value={selectedDoctor}
+                onChange={(e) => setSelectedDoctor(e.target.value)}
+                className="input-futuristic w-full"
+                required
+              >
+                <option value="">Choose a doctor</option>
+                {doctors.map((doctor) => (
+                  <option key={doctor.id} value={doctor.id}>
+                    Dr. {doctor.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          {/* Date Selection */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground flex items-center">
+              <Calendar className="w-4 h-4 mr-2" />
+              Appointment Date *
+            </label>
+            <input
               type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+              value={appointmentDate}
+              onChange={(e) => setAppointmentDate(e.target.value)}
               min={new Date().toISOString().split('T')[0]}
-              className="glass border-border/50"
+              className="input-futuristic w-full"
+              required
             />
           </div>
 
+          {/* Time Selection */}
           <div className="space-y-2">
-            <Label htmlFor="time">Time</Label>
-            <Select value={time} onValueChange={setTime} disabled={!selectedDoctor}>
-              <SelectTrigger className="glass border-border/50">
-                <SelectValue placeholder="Select time" />
-              </SelectTrigger>
-              <SelectContent>
-                {selectedDoctorData?.available_times.map((timeSlot) => (
-                  <SelectItem key={timeSlot} value={timeSlot}>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      {timeSlot}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <label className="text-sm font-medium text-foreground flex items-center">
+              <Clock className="w-4 h-4 mr-2" />
+              Appointment Time *
+            </label>
+            <select
+              value={appointmentTime}
+              onChange={(e) => setAppointmentTime(e.target.value)}
+              className="input-futuristic w-full"
+              required
+            >
+              <option value="">Choose time</option>
+              <option value="09:00">9:00 AM</option>
+              <option value="10:00">10:00 AM</option>
+              <option value="11:00">11:00 AM</option>
+              <option value="12:00">12:00 PM</option>
+              <option value="13:00">1:00 PM</option>
+              <option value="14:00">2:00 PM</option>
+              <option value="15:00">3:00 PM</option>
+              <option value="16:00">4:00 PM</option>
+              <option value="17:00">5:00 PM</option>
+            </select>
           </div>
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="notes">Additional Notes (Optional)</Label>
-          <Textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Describe your symptoms or concerns..."
-            className="glass border-border/50"
-            rows={3}
-          />
-        </div>
+          {/* Reason */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground flex items-center">
+              <FileText className="w-4 h-4 mr-2" />
+              Reason for Visit
+            </label>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Describe your symptoms or reason for the appointment..."
+              className="input-futuristic w-full h-24 resize-none"
+              rows={3}
+            />
+          </div>
 
-        <Button 
-          onClick={handleBookAppointment} 
-          disabled={loading}
-          className="w-full btn-neon"
-        >
-          {loading ? 'Booking...' : 'Book Appointment'}
-        </Button>
-      </CardContent>
-    </Card>
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-neon w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          >
+            {loading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mr-2"></div>
+                Booking Appointment...
+              </>
+            ) : (
+              <>
+                <Check className="w-5 h-5 mr-2" />
+                Book Appointment
+              </>
+            )}
+          </button>
+        </form>
+      </div>
+    </div>
   );
 };
 
-export default AppointmentBooking;
+export default AppointmentBooking; 
