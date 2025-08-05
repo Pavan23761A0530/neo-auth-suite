@@ -7,11 +7,11 @@
 @layer base {
   :root {
     /* Futuristic Color Palette */
-    --background: 220 25% 6%;
-    --foreground: 220 15% 95%;
+    --background: 220 25% 3%;
+    --foreground: 220 15% 98%;
 
-    --card: 220 20% 8%;
-    --card-foreground: 220 15% 95%;
+    --card: 220 20% 5%;
+    --card-foreground: 220 15% 98%;
 
     --popover: 220 20% 8%;
     --popover-foreground: 220 15% 95%;
@@ -125,8 +125,40 @@
 
   body {
     @apply bg-background text-foreground overflow-x-hidden;
-    background: var(--gradient-hero);
+    background: 
+      radial-gradient(ellipse at top, hsl(195 100% 15% / 0.3) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom left, hsl(280 100% 20% / 0.2) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, hsl(180 100% 15% / 0.2) 0%, transparent 50%),
+      linear-gradient(135deg, hsl(220 25% 3%), hsl(220 20% 6%), hsl(220 15% 4%));
     background-attachment: fixed;
+    background-size: 100% 100%, 80% 80%, 80% 80%, 100% 100%;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      repeating-linear-gradient(
+        90deg,
+        transparent 0px,
+        hsl(195 100% 65% / 0.03) 1px,
+        transparent 2px,
+        transparent 100px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        hsl(280 100% 70% / 0.03) 1px,
+        transparent 2px,
+        transparent 100px
+      );
+    pointer-events: none;
+    z-index: -1;
   }
 }
 
