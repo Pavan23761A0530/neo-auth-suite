@@ -10,12 +10,12 @@ interface Doctor {
 }
 
 interface AppointmentBookingProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
+  onSuccess?: () => void;
 }
 
-const AppointmentBooking = ({ isOpen, onClose, onSuccess }: AppointmentBookingProps) => {
+const AppointmentBooking = ({ isOpen = true, onClose = () => {}, onSuccess = () => {} }: AppointmentBookingProps) => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState('');
   const [appointmentDate, setAppointmentDate] = useState('');

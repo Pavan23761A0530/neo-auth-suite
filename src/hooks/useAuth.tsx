@@ -1,4 +1,6 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
 interface User {
   id: string;
@@ -17,97 +19,115 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE_URL = 'http://localhost:5000/api';
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
-    const savedUser = localStorage.getItem('healthcare_user');
-    const token = localStorage.getItem('healthcare_token');
-    
-    if (savedUser && token) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        // Clear invalid data
-        localStorage.removeItem('healthcare_user');
-        localStorage.removeItem('healthcare_token');
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        
+        if (session?.user) {
+          // Get user role from metadata or default to patient
+          const role = session.user.user_metadata?.role || 'patient';
+          const name = session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User';
+          
+          setUser({
+            id: session.user.id,
+            email: session.user.email!,
+            role: role as 'patient' | 'doctor',
+            name: name
+          });
+        } else {
+          setUser(null);
+        }
+        
+        setLoading(false);
       }
-    }
-    setLoading(false);
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      
+      if (session?.user) {
+        const role = session.user.user_metadata?.role || 'patient';
+        const name = session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User';
+        
+        setUser({
+          id: session.user.id,
+          email: session.user.email!,
+          role: role as 'patient' | 'doctor',
+          name: name
+        });
+      }
+      
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
+    setLoading(true);
+    
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Network error' }));
-        throw new Error(errorData.error || `Login failed: ${response.status}`);
+      if (error) {
+        throw new Error(error.message);
       }
 
-      const data = await response.json();
-      
-      if (!data.user || !data.access_token) {
-        throw new Error('Invalid response from server');
-      }
-      
-      setUser(data.user);
-      localStorage.setItem('healthcare_user', JSON.stringify(data.user));
-      localStorage.setItem('healthcare_token', data.access_token);
+      // User state will be updated via the auth state change listener
     } catch (error: any) {
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        throw new Error('Unable to connect to server. Please check your internet connection.');
-      }
+      setLoading(false);
       throw error;
     }
   };
 
   const register = async (email: string, password: string, name: string, role: 'patient' | 'doctor') => {
+    setLoading(true);
+    
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password, name, role }),
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            name,
+            role
+          }
+        }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Network error' }));
-        throw new Error(errorData.error || `Registration failed: ${response.status}`);
+      if (error) {
+        throw new Error(error.message);
       }
 
-      const data = await response.json();
-      
-      if (!data.user || !data.access_token) {
-        throw new Error('Invalid response from server');
+      if (data.user && !data.user.email_confirmed_at) {
+        throw new Error('Please check your email and click the confirmation link to complete registration.');
       }
-      
-      setUser(data.user);
-      localStorage.setItem('healthcare_user', JSON.stringify(data.user));
-      localStorage.setItem('healthcare_token', data.access_token);
+
+      // User state will be updated via the auth state change listener
     } catch (error: any) {
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        throw new Error('Unable to connect to server. Please check your internet connection.');
-      }
+      setLoading(false);
       throw error;
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem('healthcare_user');
-    localStorage.removeItem('healthcare_token');
+    setSession(null);
   };
 
   return (

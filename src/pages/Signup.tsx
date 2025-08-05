@@ -85,10 +85,10 @@ const Signup = () => {
 
       toast({
         title: 'Success!',
-        description: 'Account created successfully. Welcome to the healthcare platform!',
+        description: 'Please check your email and click the confirmation link to complete registration.',
       });
       
-      navigate('/');
+      // Don't navigate immediately, wait for email confirmation
     } catch (error: any) {
       toast({
         title: 'Error',
